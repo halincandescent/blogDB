@@ -21,8 +21,6 @@ app.use(express.static("public"));
 // connect to database
 mongoose.connect('mongodb://127.0.0.1:27017/blogDB', {useNewUrlParser : true});
 
-let posts = [];
-
 // post schema
 const postSchema = {
   title: String,
@@ -36,7 +34,7 @@ app.get("/", function(req, res){
   Post.find({})
     .then(foundPost => {
       if (foundPost.length === 0) {
-        console.log("No posts composed yet");
+        //console.log("No posts composed yet");
       } else {
         return foundPost;
       }
@@ -48,10 +46,6 @@ app.get("/", function(req, res){
       });
     })
     .catch(err => console.log(err));
- // res.render("home", {
- //   startingContent: homeStartingContent,
- //   posts: posts
- //   });
 });
 
 app.get("/about", function(req, res){
@@ -71,27 +65,19 @@ app.post("/compose", function(req, res){
     title: req.body.postTitle,
     content: req.body.postBody
   });
-
-  //posts.push(post);
   post.save(); 
   res.redirect("/");
 
 });
 
-app.get("/posts/:postName", function(req, res){
-  const requestedTitle = _.lowerCase(req.params.postName);
-
-  posts.forEach(function(post){
-    const storedTitle = _.lowerCase(post.title);
-
-    if (storedTitle === requestedTitle) {
-      res.render("post", {
-        title: post.title,
-        content: post.content
-      });
-    }
-  });
-
+app.get("/posts/:postId", function(req, res){
+  const requestedPostId = req.params.postId;
+  Post.findOne({_id:requestedPostId}).then(function(post){
+    res.render("post",{
+    title: post.title,
+    content: post.content 
+    });
+  }).catch(err => console.log(err));  
 });
 
 app.listen(3000, function() {
